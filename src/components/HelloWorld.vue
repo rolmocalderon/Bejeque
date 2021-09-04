@@ -1,58 +1,89 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div class="container">
+    <product-filter :filterOptions="filterOptions" :addedFilters="addedFilters" @addFilter="onFilterAdded($event)" @removeFilter="onFilterRemoved($event)"></product-filter>
+    <div class="content">
+      <product-box
+        v-for="product in shownProducts"
+        v-bind:key="product.id"
+        v-bind:title="product.title" :product="product">
+      </product-box>
+      <div v-if="shownProducts.length == 0">
+        No hay productos para mostrar
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import ProductBox from './ProductBox.vue'
+import ProductFilter from './ProductFilter.vue'
+
 export default {
+  components: { ProductBox, ProductFilter },
   name: 'HelloWorld',
+  data: function () {
+    return {
+      products: [
+        { id: 1, title: 'Bejeque', image: 'green_skull.jpg', category: 'skull', color: 'green', size: "3", brilli: "y", },
+        { id: 2, title: 'Bejeque', image: 'bejeque.jpg', category: 'cat', color: 'purple', size: "3", brilli: "n" },
+        { id: 3, title: 'Bejeque', image: 'bejeque.jpg', category: 'dog', color: 'purple', size: "2", brilli: "y" },
+        { id: 4, title: 'Bejeque', image: 'bejeque.jpg', category: 'dog', color: 'red', size: "4", brilli: "n" },
+        { id: 5, title: 'Bejeque', image: 'bejeque.jpg', category: 'owl', color: 'purple', size: "2", brilli: "y" },
+        { id: 6, title: 'Bejeque', image: 'bejeque.jpg', category: 'owl', color: 'purple', size: "1", brilli: "n" },
+        { id: 7, title: 'Bejeque', image: 'bejeque.jpg', category: 'dog', color: 'red', size: "1", brilli: "y" }
+      ],
+      filterOptions: [{filterName: "Category", options: ["owl"]}, {filterName: "Color", options: ["purple"]}, {filterName: "Size", options: ["1","3"]}, {filterName: "Brilli", options: ["y"]}],
+      addedFilters: []
+    }
+  },
   props: {
     msg: String
+  },
+  methods: {
+    onFilterAdded: function(filter){
+      this.addedFilters.push(filter);
+    },
+    onFilterRemoved: function(filter){
+      this.addedFilters = this.addedFilters.filter(e => e.filterName !== filter.filterName);
+    },
+    isFiltered: function(product){
+      var isFiltered = true;
+      this.addedFilters.forEach(filter => {
+          if(product[filter.filterName.toLowerCase()] && filter.options.length > 0 && !filter.options.includes(product[filter.filterName.toLowerCase()])){
+            isFiltered = false;
+          }
+      });
+
+      return isFiltered;
+    }
+  },
+  computed: {
+    shownProducts: function(){
+      var shownProducts = [];
+
+      this.products.forEach(product => {
+        if(this.isFiltered(product)){
+          shownProducts.push(product);
+        }
+      });
+
+      return shownProducts;
+    }
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+  .container{
+    display: flex;
+    justify-content: center;
+  }
+
+  .content{
+    width: 80%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 </style>
